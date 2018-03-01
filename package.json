@@ -1,0 +1,15 @@
+{
+  "name": "botbuilder-strip-mentions",
+  "version": "0.0.1",
+  "description": "Middleware for Microsoft Bot Builder v4 that strips Teams at-mentions from the message",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nafis Zaman",
+  "license": "MIT",
+  "dependencies": {
+    "botbuilder": "^4.0.0-m1.7"
+  }
+}
