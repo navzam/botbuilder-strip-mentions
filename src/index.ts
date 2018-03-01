@@ -63,6 +63,10 @@ export class StripMentions implements Middleware {
  * @param behavior Determines the stripping behavior
  */
 export function stripMentions(text: string, mentions: MentionEntity[], behavior: RemoveBehavior): string {
+    if (behavior === 'none') {
+        return text;
+    }
+
     let ret = text;
     for (const mention of mentions) {
         const replaceWith = behavior === 'tags' ? getAtTagContent(mention.text) : '';
