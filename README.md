@@ -1,6 +1,6 @@
 # Purpose
 
-For use with the Microsoft Bot Builder SDK v4, particularly when developing a bot for Microsoft Teams. Users will often @mention the bot or other users within a Team, which pollutes incoming messages with often undesired `<at>` tags. This middleware will strip these `<at>` tags from the message.
+For use with the Microsoft Bot Builder SDK v4, particularly when developing a bot for Microsoft Teams. Users will often @mention the bot or other users within a Team, which pollutes incoming messages with often undesired `<at>` tags. This package helps strip these `<at>` tags from the message.
 
 # Usage
 
@@ -57,8 +57,8 @@ The valid behaviors are
 For example, if the user typed
 > **@Teams Bot** Schedule a meeting with **@John Smith**
 
-then your bot would receive this text
+then your bot would receive the string
 >\<at>Teams Bot\</at> Schedule a meeting with \<at>John Smith\</at>
 
 and the middleware (with the default values `'whole'` for bots and `'tags'` for users) would produce
-> "Schedule a meeting with John Smith".
+> Schedule a meeting with John Smith
