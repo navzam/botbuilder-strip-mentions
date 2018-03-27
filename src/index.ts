@@ -1,4 +1,4 @@
-import { Middleware, Entity } from 'botbuilder';
+import { Middleware, Entity, BotContext } from 'botbuilder';
 
 export type RemoveBehavior = 'full' | 'tags' | 'none';
 
@@ -8,6 +8,9 @@ export interface StripMentionsOptions {
 }
 
 export class StripMentions implements Middleware {
+    // Symbol for keying into context object
+    private readonly contextKey: Symbol = Symbol('StripMentions');
+
     // Default values for all options
     private readonly options: StripMentionsOptions = {
         botMentionRemoveBehavior: 'full',
@@ -18,41 +21,37 @@ export class StripMentions implements Middleware {
         this.options = Object.assign(this.options, options);
     }
 
-    public receiveActivity(context: BotContext, next: () => Promise<void>): Promise<void> {
-        if (!context.conversationReference.bot || !context.request.text) {
-            return next();
-        }
+    public onProcessRequest(context: BotContext, next: () => Promise<void>) {
+        // Ensure we have text, and save it as the original text
+        if (!context.request.text) return next();
+        context.set(this.contextKey, context.request.text);
 
-        const botId = context.conversationReference.bot.id;
+        // Ensure we have the bot's ID
+        const cRef = BotContext.getConversationReference(context.request);
+        if (!cRef.bot || !cRef.bot.id) return next();
+        const botId = cRef.bot.id;
 
         // Extract mention entities
-        if (context.request.entities === undefined) {
-            context.request.entities = [];
-        }
-        const mentionEnts = context.request.entities.filter(e => e.type === 'mention') as MentionEntity[];
-        
-        let strippedText = context.request.text;
+        const mentionEnts = (context.request.entities || []).filter(e => e.type === 'mention') as MentionEntity[];
 
-        // If enabled, strip bot at-mentions out of the message text
-        if (this.options.botMentionRemoveBehavior && this.options.botMentionRemoveBehavior !== 'none') {
+        // Strip bot at-mentions out of the message text
+        if (this.options.botMentionRemoveBehavior) {
             const botMentionEnts = mentionEnts.filter(e => e.mentioned.id === botId);
-            strippedText = stripMentions(strippedText, botMentionEnts, this.options.botMentionRemoveBehavior);
+            context.request.text = stripMentions(context.request.text, botMentionEnts, this.options.botMentionRemoveBehavior);
         }
 
-        // If enabled, strip user at-mentions out of the message text
-        if (this.options.userMentionRemoveBehavior && this.options.userMentionRemoveBehavior !== 'none') {
+        // Strip user at-mentions out of the message text
+        if (this.options.userMentionRemoveBehavior) {
             const otherMentionEnts = mentionEnts.filter(e => e.mentioned.id !== botId);
-            strippedText = stripMentions(strippedText, otherMentionEnts, this.options.userMentionRemoveBehavior);
+            context.request.text = stripMentions(context.request.text, otherMentionEnts, this.options.userMentionRemoveBehavior);
         }
-
-        // Push stripped text as an entity to the context object
-        context.request.entities.push(<StrippedTextEntity>{
-            type: 'strippedText',
-            text: strippedText
-        });
 
         // Continue middleware pipeline
         return next();
+    }
+
+    public getOriginalText(context: BotContext): string {
+        return context.get(this.contextKey) as string;
     }
 }
 
@@ -84,11 +83,6 @@ function getAtTagContent(str: string): string {
     // Capture the text between the "at" open/close tags
     const matchResult = str.match('<at>(.*)</at>');
     return matchResult ? matchResult[1] : '';
-}
-
-export interface StrippedTextEntity extends Entity {
-    type: 'strippedText';
-    text: string;
 }
 
 export interface MentionEntity extends Entity {
