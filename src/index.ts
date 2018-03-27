@@ -3,8 +3,8 @@ import { Middleware, Entity, BotContext } from 'botbuilder';
 export type RemoveBehavior = 'full' | 'tags' | 'none';
 
 export interface StripMentionsOptions {
-    botMentionRemoveBehavior?: RemoveBehavior;
-    userMentionRemoveBehavior?: RemoveBehavior;
+    botBehavior?: RemoveBehavior;
+    userBehavior?: RemoveBehavior;
 }
 
 export class StripMentions implements Middleware {
@@ -13,8 +13,8 @@ export class StripMentions implements Middleware {
 
     // Default values for all options
     private readonly options: StripMentionsOptions = {
-        botMentionRemoveBehavior: 'full',
-        userMentionRemoveBehavior: 'tags'
+        botBehavior: 'full',
+        userBehavior: 'tags'
     };
 
     constructor(options: StripMentionsOptions = {}) {
@@ -35,15 +35,15 @@ export class StripMentions implements Middleware {
         const mentionEnts = (context.request.entities || []).filter(e => e.type === 'mention') as MentionEntity[];
 
         // Strip bot at-mentions out of the message text
-        if (this.options.botMentionRemoveBehavior) {
+        if (this.options.botBehavior) {
             const botMentionEnts = mentionEnts.filter(e => e.mentioned.id === botId);
-            context.request.text = stripMentions(context.request.text, botMentionEnts, this.options.botMentionRemoveBehavior);
+            context.request.text = stripMentions(context.request.text, botMentionEnts, this.options.botBehavior);
         }
 
         // Strip user at-mentions out of the message text
-        if (this.options.userMentionRemoveBehavior) {
+        if (this.options.userBehavior) {
             const otherMentionEnts = mentionEnts.filter(e => e.mentioned.id !== botId);
-            context.request.text = stripMentions(context.request.text, otherMentionEnts, this.options.userMentionRemoveBehavior);
+            context.request.text = stripMentions(context.request.text, otherMentionEnts, this.options.userBehavior);
         }
 
         // Continue middleware pipeline

@@ -39,8 +39,8 @@ You can configure how the tags are stripped for your bot vs. for other users via
 ```ts
 // These are the default values for the middleware
 new StripMentions({
-    botMentionRemoveBehavior: 'whole',
-    userMentionRemoveBehavior: 'tags'
+    botBehavior: 'whole',
+    userBehavior: 'tags'
 })
 ```
 
