@@ -18,7 +18,9 @@ export class StripMentions implements Middleware {
     };
 
     constructor(options: StripMentionsOptions = {}) {
-        this.options = Object.assign(this.options, options);
+        const { botBehavior = 'full', userBehavior = 'tags' } = options;
+        this.options.botBehavior = botBehavior;
+        this.options.userBehavior = userBehavior;
     }
 
     public onProcessRequest(context: BotContext, next: () => Promise<void>) {
